@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="css/main.css" />
+    <title>Document</title>
+</head>
+<body onload="doGetDevicesInfo()">
+    
+    <button id="startCamera1" onclick="doStartCamera(this)">Camera 1</button>
+    <button id="startCamera2" onclick="doStartCamera(this)">Camera 2</button>
+    <button id="startRecord1" onclick="doStartRecord(this)" disabled>Record 1</button>
+    <button id="startRecord2" onclick="doStartRecord(this)" disabled>Record 2</button>
+    
+
+    <br/>
+    <video id="camera1" controls autoplay></video>
+    <video id="camera2" controls autoplay></video>
+
+    <div>
+        <button id="capture1" onclick="doCaptureSnapShot(this)">Capture1</button>
+        <canvas id="canvas1"></canvas>
+        <button id="capture2" onclick="doCaptureSnapShot(this)">Capture2</button>
+        <canvas id="canvas2"></canvas>
+    </div>
+    <script src="js/script.js"></script>
+</body>
+</html>
