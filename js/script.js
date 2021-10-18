@@ -2,16 +2,15 @@
 
 
 var img = document.querySelector('img') || document.createElement('img');
-let recordedBlobs;
+const hasta = document.querySelector('h1#hasta').innerHTML;
+let recordedBlobs = [];
 let recordedBlobs2 = [];
 let mediaRecorder;
 let mediaRecorder2;
 let camera1stream;
 let camera2stream;
 let stream;
-let stream1;
-let stream2;
-let tracks = [];
+
 
 const videoButton1 = document.querySelector('video#camera1');
 const videoButton2 = document.querySelector('video#camera2');
@@ -19,7 +18,7 @@ const videoButton2 = document.querySelector('video#camera2');
 const cleanUp = (whichCamera) => {
     try{
         stream = camera.srcObject;
-        tracks = stream.getTracks();
+        const tracks = stream.getTracks();
         tracks.array.forEach(element => {
             tracks.stop();
         });
@@ -80,7 +79,12 @@ const startCamera = async (myVideoInput, whichCamera) => {
     })
     .then(streamm => {
         whichCamera.srcObject = streamm;
-        camera1stream = whichCamera.srcObject;
+        if ( myVideoInputs[0]===myVideoInput) {
+            camera1stream = whichCamera.srcObject;
+        }
+        else if(myVideoInputs[1]===myVideoInput){
+            camera2stream = whichCamera.srcObject;
+        }
     })
     .catch(err => {
         console.log(err);
@@ -97,7 +101,6 @@ const doStartCamera = (button) => {
             recordButton1.disabled = false;
             videoButton1.style.display = 'block';
             videoButton2.style.display = 'none';
-            console.log(tracks);
             break;
         case 'startCamera2':
             startCamera(myVideoInputs[1], camera2);
@@ -105,7 +108,6 @@ const doStartCamera = (button) => {
             recordButton2.disabled = false;
             videoButton1.style.display = 'none';
             videoButton2.style.display = 'block';
-            console.log(tracks);
             break;
 
     }
@@ -156,13 +158,13 @@ const doStartRecord = async (button) => {
         case 'startRecord1':
             if (button.textContent === "Record 1") {
                 button.textContent = "Stop Recording 1";
-                startRecording(1);
+                startRecording1();
                 
                 
             }
             else{
                 button.textContent = "Record 1";
-                stopRecording();
+                stopRecording1();
                 
                
             }
@@ -171,13 +173,13 @@ const doStartRecord = async (button) => {
         case 'startRecord2':
             if (button.textContent === "Record 2") {
                 button.textContent = "Stop Recording 2";
-                startRecording(2);
+                startRecording2();
                 
                 
             }
             else{
                 button.textContent = "Record 2";
-                stopRecording();
+                stopRecording2();
                 
             }
             break;
@@ -187,60 +189,93 @@ const doStartRecord = async (button) => {
 
 
 
-async function startRecording(camerastream) {
-    let zzz;
+async function startRecording1() {
     let options = {mimeType: 'video/webm;codecs=vp9,opus'};
-    recordedBlobs2 = [];
-    if (camerastream === 1) {
-        
-        try {
-            mediaRecorder = new MediaRecorder(camera1stream, options);
-            console.log(typeof(mediaRecorder));
-            } catch (e) {
-              console.error('Exception while creating MediaRecorder:', e);
-              return;
-            }
-    }
-    else if(camerastream === 2){
-        try {
-            mediaRecorder = new MediaRecorder(camera2stream, options);
-            } catch (e) {
-              console.error('Exception while creating MediaRecorder:', e);
-              return;
-            }
-    }
-   
+    recordedBlobs = [];
+    
+    try {
+        mediaRecorder = new MediaRecorder(camera1stream, options);
+        console.log(typeof(mediaRecorder));
+        } catch (e) {
+          console.error('Exception while creating MediaRecorder:', e);
+          return;
+        }
   
     console.log('Created MediaRecorder', mediaRecorder, 'with options', options);
     mediaRecorder.onstop = (event) => {
       console.log('Recorder stopped: ', event);
-      console.log('Recorded Blobs: ', recordedBlobs2);
+      console.log('Recorded Blobs: ', recordedBlobs);
     };
-    mediaRecorder.ondataavailable = handleDataAvailable;
+    mediaRecorder.ondataavailable = handleDataAvailable1;
     mediaRecorder.start();
     console.log('MediaRecorder started', mediaRecorder);
   }
 
 
-async function handleDataAvailable(event) {
+async function handleDataAvailable1(event) {
     
     if(event.data && event.data.size > 0){
-        await recordedBlobs2.push(event.data)
+        await recordedBlobs.push(event.data);
+        downloadVideo();
     }
+    
 }
 
-async function stopRecording() {
+async function stopRecording1() {
     await mediaRecorder.stop();
-    downloadVideo();
+    
 }
+
+
+
+async function startRecording2() {
+    let options = {mimeType: 'video/webm;codecs=vp9,opus'};
+    recordedBlobs2 = [];
+    
+    try {
+        mediaRecorder2 = new MediaRecorder(camera2stream, options);
+    } catch (e) {
+            console.error('Exception while creating MediaRecorder:', e);
+            return;
+        }
+
+    console.log('Created MediaRecorder', mediaRecorder2, 'with options', options);
+    mediaRecorder2.onstop = (event) => {
+      console.log('Recorder stopped: ', event);
+      console.log('Recorded Blobs: ', recordedBlobs2);
+    };
+    mediaRecorder2.ondataavailable = handleDataAvailable2;
+    mediaRecorder2.start();
+    console.log('MediaRecorder started', mediaRecorder2);
+  }
+
+
+async function handleDataAvailable2(event) {
+    
+    if(event.data && event.data.size > 0){
+        await recordedBlobs2.push(event.data);
+        downloadVideo2();
+    }
+    
+}
+
+async function stopRecording2() {
+    await mediaRecorder2.stop();
+    
+}
+
+
+
+
+
 
 const downloadVideo = async () => {
-    const blob = new Blob(recordedBlobs2, {type: 'video/webm'});
+    const blob = new Blob(recordedBlobs, {type: 'video/webm'});
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.style.display = 'none';
     a.href = url;
-    a.download = 'test.webm';
+    a.download = `${hasta}.webm`;
     document.body.appendChild(a);
     a.click();
     setTimeout(() => {
@@ -250,4 +285,20 @@ const downloadVideo = async () => {
     console.log("Bitti");
 }
 
+
+const downloadVideo2 = async () => {
+    const blob = new Blob(recordedBlobs2, {type: 'video/webm'});
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.style.display = 'none';
+    a.href = url;
+    a.download = `${hasta}.webm`;
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(() => {
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
+    }, 100);
+    console.log("Bitti");
+}
 
